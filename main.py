@@ -265,41 +265,53 @@ def pos():
     
 
 def checkDatabaseExist():
-	try:
-		conn = sqlite3.connect("inventory.db")
-		cur = conn.cursor()
-		
-		#Create stock table in inventory.db
-		cur.execute("""CREATE TABLE stock(
-			id integer,
-			itemName text,
-			itemPrice real,
-			quantity integer,
-   			barcode text)""")
-		cur.execute("""CREATE TABLE transactions(
-			transaction_number integer, 
-   			items text,
-      		transaction_price real)""")
-		conn.commit()
-		conn.close()
+    try:
+        conn = sqlite3.connect("inventory.db")
+        cur = conn.cursor()
+        
+        #Create tables in the db
+        cur.execute("""CREATE TABLE item(
+            ItemID integer PRIMARY KEY UNIQUE,
+            itemName text,
+            itemPrice real)""")
+        cur.execute("""CREATE TABLE customer(
+            CusID integer PRIMARY KEY UNIQUE, 
+            fName text,
+            lName text,
+            address text)""")
+        cur.execute("""CREATE TABLE orders(
+            OrderID integer PRIMARY KEY UNIQUE,
+            CusID integer REFERENCES customer(Cus),
+            date text,
+            disc real,
+            FOREIGN KEY(CusID) REFERENCES customer(CusID))""")
+        cur.execute("""CREATE TABLE transactions(
+            OrderID integer,
+            TransID integer,
+            ItemID integer,
+            PRIMARY KEY (OrderID, TransID),
+            FOREIGN KEY(OrderID) REFERENCES orders(OrderID),
+            FOREIGN KEY(ItemID) REFERENCES item(ItemID))""")
+        conn.commit()
+        conn.close()
 
-		#Add first item to reduce chances of error when scanning through table later on.
-		conn = sqlite3.connect("inventory.db")
-		cur = conn.cursor()
-		print("Please add your first item to the database.")
-		itemName = input("What is the name of the item? ")
-		itemPrice = float(input("What is the price of your item? "))
-		quantity = int(input("How much of this item do you have in stock? "))
-		barcode = input("What is the barcode of the item (ID that will be used for POS) ")
+        #Add first item to reduce chances of error when scanning through table later on.
+        conn = sqlite3.connect("inventory.db")
+        cur = conn.cursor()
+        print("Please add your first item to the database.")
+        itemName = input("What is the name of the item? ")
+        itemPrice = float(input("What is the price of your item? "))
+        quantity = int(input("How much of this item do you have in stock? "))
+        barcode = input("What is the barcode of the item (ID that will be used for POS) ")
 
-		cur.execute("INSERT INTO stock VALUES('0', '{0}', '{1}', '{2}', '{3}')".format(itemName, itemPrice, quantity, barcode))	
-		
-		conn.commit()
-		conn.close()
-	except:
-		print("Database and table found")
-	
-		conn.close()
+        cur.execute("INSERT INTO stock VALUES('0', '{0}', '{1}', '{2}', '{3}')".format(itemName, itemPrice, quantity, barcode))	
+
+        conn.commit()
+        conn.close()
+    except:
+        print("Database and table found")
+
+        conn.close()
 
 def main():
 	menu = True	
@@ -325,4 +337,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    #Test
