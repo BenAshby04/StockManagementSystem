@@ -98,27 +98,27 @@ def addProduct():
 			while itemMenu:
 				itemName = input("What is the name of the item? ")
 				itemPrice = float(input("What is the price of the item? "))
-				quantity = int(input("How much of this item do you have in stock? "))
+				# quantity = int(input("How much of this item do you have in stock? "))
 				while idMenu:
         
-					barcode = input("What is the barcode of the item (ID that will be used for POS) ")
+					# barcode = input("What is the barcode of the item (ID that will be used for POS) ")
 		
 					
-					exists = cur.execute("SELECT * FROM stock WHERE barcode ='{0}'".format(barcode)).fetchone()
-					if exists == None:
+					# exists = cur.execute("SELECT * FROM stock WHERE barcode ='{0}'".format(barcode)).fetchone()
+					# if exists == None:
 						
-						#Finds the highest id amount and adds one to it
-						cur.execute("SELECT MAX(id) FROM stock")
-						currentID = cur.fetchone()[0]
-						newID = currentID + 1
-						#Inserts the new item into the database table
-						cur.execute("INSERT INTO stock VALUES('{0}','{1}','{2}','{3}','{4}')".format(newID,itemName,itemPrice,quantity,barcode))
-						conn.commit()
-						itemMenu = False
-						idMenu = False
-					else:
+					#Finds the highest id amount and adds one to it
+					# cur.execute("SELECT MAX(id) FROM stock")
+					# currentID = cur.fetchone()[0]
+					# newID = currentID + 1
+					#Inserts the new item into the database table
+					cur.execute("INSERT INTO item (itemName, itemPrice) VALUES('{0}','{1}')".format(itemName,itemPrice))
+					conn.commit()
+					itemMenu = False
+					idMenu = False
+					# else:
 					
-						print("There is a item with that barcode already in the database please try again.")
+						# print("There is a item with that barcode already in the database please try again.")
 			
 		if menuInput == "exit":
 			conn.close()
@@ -270,26 +270,33 @@ def checkDatabaseExist():
         cur = conn.cursor()
         
         #Create tables in the db
+        # ItemID text PRIMARY KEY UNIQUE,
+        # aID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ItemID, -4)) STORED,
         cur.execute("""CREATE TABLE item(
-            ID INT IDENTITY(1,1) NOT NULl PRIMARY KEY ClUSTERED,
-            ItemID AS "IID" + RIGHT('00000000' + CAST(ID AS VARCHAR(8)), 8) PERSISTED,
+			ItemID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+   			aID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ItemID, -4)) STORED,
             itemName text,
             itemPrice real)""")
+        # CusID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE customer(
-            CusID integer PRIMARY KEY UNIQUE, 
+			CusID text PRIMARY KEY UNIQUE,
+            aID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || CusID, -4)) STORED,
             fName text,
             lName text,
             address text)""")
+            # OrderID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE orders(
-            OrderID integer PRIMARY KEY UNIQUE,
+            OrderID text PRIMARY KEY UNIQUE,
+            aID TEXT GENERATED ALWAYS AS ('OID' || SUBSTR('0000' || OrderID, -4)) STORED,
             CusID integer REFERENCES customer(Cus),
             date text,
             disc real,
             FOREIGN KEY(CusID) REFERENCES customer(CusID))""")
         cur.execute("""CREATE TABLE transactions(
-            OrderID integer,
-            TransID integer,
-            ItemID integer,
+            OrderID text,
+            TransID text,
+            aID TEXT GENERATED ALWAYS AS ('TID' || SUBSTR('0000' || TransID, -4)),
+            ItemID text,
             PRIMARY KEY (OrderID, TransID),
             FOREIGN KEY(OrderID) REFERENCES orders(OrderID),
             FOREIGN KEY(ItemID) REFERENCES item(ItemID))""")
@@ -297,15 +304,15 @@ def checkDatabaseExist():
         conn.close()
 
         #Add first item to reduce chances of error when scanning through table later on.
-        conn = sqlite3.connect("inventory.db")
-        cur = conn.cursor()
-        print("Please add your first item to the database.")
-        itemName = input("What is the name of the item? ")
-        itemPrice = float(input("What is the price of your item? "))
-        quantity = int(input("How much of this item do you have in stock? "))
-        barcode = input("What is the barcode of the item (ID that will be used for POS) ")
+        # conn = sqlite3.connect("inventory.db")
+        # cur = conn.cursor()
+        # print("Please add your first item to the database.")
+        # itemName = input("What is the name of the item? ")
+        # itemPrice = float(input("What is the price of your item? "))
+        # quantity = int(input("How much of this item do you have in stock? "))
+        # barcode = input("What is the barcode of the item (ID that will be used for POS) ")
 
-        cur.execute("INSERT INTO stock VALUES('0', '{0}', '{1}', '{2}', '{3}')".format(itemName, itemPrice, quantity, barcode))	
+        # cur.execute("INSERT INTO stock VALUES('0', '{0}', '{1}', '{2}', '{3}')".format(itemName, itemPrice, quantity, barcode))	
 
         conn.commit()
         conn.close()
