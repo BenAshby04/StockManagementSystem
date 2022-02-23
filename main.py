@@ -271,7 +271,8 @@ def checkDatabaseExist():
         
         #Create tables in the db
         cur.execute("""CREATE TABLE item(
-            ItemID integer PRIMARY KEY UNIQUE,
+            ID INT IDENTITY(1,1) NOT NULl PRIMARY KEY ClUSTERED,
+            ItemID AS "IID" + RIGHT('00000000' + CAST(ID AS VARCHAR(8)), 8) PERSISTED,
             itemName text,
             itemPrice real)""")
         cur.execute("""CREATE TABLE customer(
