@@ -226,18 +226,18 @@ def pos():
 				if id == "sale":
 					totalPrice = 0.0
 					for i in range(len(itemList)):
-						totalPrice = totalPrice + itemList[i][2]
+						totalPrice = totalPrice + itemList[i][3]
 					# for item2 in itemList:
 					# 	totalPrice =+ item2[2]
 					print(totalPrice)
 					posAction = False
-					newTransaction = transaction(totalPrice, itemList)
-					newTransaction.sale()
+					# newTransaction = transaction(totalPrice, itemList)
+					# newTransaction.sale()
 
 					
 				else:
 					try:
-						cur.execute("SELECT * FROM stock WHERE barcode='{0}'".format(id))
+						cur.execute("SELECT * FROM item WHERE ItemID='{0}'".format(id))
 						item = cur.fetchall()[0]
 						itemList.append(item)
 
