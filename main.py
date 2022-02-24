@@ -98,27 +98,13 @@ def addProduct():
 			while itemMenu:
 				itemName = input("What is the name of the item? ")
 				itemPrice = float(input("What is the price of the item? "))
-				# quantity = int(input("How much of this item do you have in stock? "))
-				while idMenu:
-        
-					# barcode = input("What is the barcode of the item (ID that will be used for POS) ")
-		
-					
-					# exists = cur.execute("SELECT * FROM stock WHERE barcode ='{0}'".format(barcode)).fetchone()
-					# if exists == None:
-						
-					#Finds the highest id amount and adds one to it
-					# cur.execute("SELECT MAX(id) FROM stock")
-					# currentID = cur.fetchone()[0]
-					# newID = currentID + 1
-					#Inserts the new item into the database table
-					cur.execute("INSERT INTO item (itemName, itemPrice) VALUES('{0}','{1}')".format(itemName,itemPrice))
-					conn.commit()
-					itemMenu = False
-					idMenu = False
-					# else:
-					
-						# print("There is a item with that barcode already in the database please try again.")
+				quantity = int(input("How much of this item do you have in stock? "))
+
+				#Inserts the new item into the database table
+				cur.execute("INSERT INTO item (itemName, itemPrice, quantity) VALUES('{0}','{1}','{2}')".format(itemName,itemPrice, quantity))
+				conn.commit()
+				itemMenu = False
+				idMenu = False
 			
 		if menuInput == "exit":
 			conn.close()
@@ -146,14 +132,14 @@ def deleteProduct():
                     idMenu = False
                 else:
                     try:
-                        cur.execute("SELECT id FROM stock WHERE barcode = '{0}'".format(id))
-                        idRemoved = cur.fetchone()[0]
-                        cur.execute("SELECT * FROM stock")
-                        listOfItems = cur.fetchall()
-                        for item in listOfItems:
-                            if item[0] > idRemoved:
-                                cur.execute("UPDATE stock SET id='{0}' WHERE id='{1}'".format(item[0]-1, item[0]))
-                        cur.execute("DELETE FROM stock WHERE barcode='{0}'".format(id))
+                        # cur.execute("SELECT id FROM stock WHERE barcode = '{0}'".format(id))
+                        # idRemoved = cur.fetchone()[0]
+                        # cur.execute("SELECT * FROM stock")
+                        # listOfItems = cur.fetchall()
+                        # for item in listOfItems:
+                        #     if item[0] > idRemoved:
+                        #         cur.execute("UPDATE stock SET id='{0}' WHERE id='{1}'".format(item[0]-1, item[0]))
+                        cur.execute("DELETE FROM item WHERE ItemID='{0}'".format(id))
                         print("Item Deleted")
                         idMenu = False
                         conn.commit()
@@ -169,13 +155,13 @@ def listAllProducts():
     conn = sqlite3.connect("inventory.db")
     cur = conn.cursor()
     
-    cur.execute("SELECT * FROM stock ORDER BY barcode")
+    cur.execute("SELECT * FROM item ORDER BY ItemID")
     rows = cur.fetchall()
     print()
     print("Products:")
-    print("Item Name | Item Price | Barcode")
+    print("Item Name | Item Price | Quantity | Item ID")
     for row in rows:
-        print("{0} | {2} | {1}".format(row[1], row[4], row[2]))
+        print("{0} | {1} | {2} | {3}".format(row[2], row[3], row[4], row[1]))
     conn.close()
     print()
     return 0
@@ -197,13 +183,13 @@ def editProduct():
 				print("Please enter the id in full of the item you want to edit (e.g 001)")
 				id = input("> ")
 				try:
-					cur.execute("SELECT * FROM stock WHERE barcode ='{0}'".format(id))
+					cur.execute("SELECT * FROM item WHERE ItemID ='{0}'".format(id))
 					
 					item = cur.fetchall()[0]
-					print("There is currently {0} of {1} left!".format(item[3], item[1]))
+					print("There is currently {0} of {1} left!".format(item[4], item[2]))
 					amountToAdd = int(input("How many would you like to add? "))
-					newQuantity = item[3] + amountToAdd
-					cur.execute("UPDATE stock SET quantity='{0}' WHERE barcode='{1}'".format(newQuantity, id))
+					newQuantity = item[4] + amountToAdd
+					cur.execute("UPDATE item SET quantity='{0}' WHERE ItemID='{1}'".format(newQuantity, id))
 					conn.commit()
 				except:
 					print("Item not found")
@@ -270,31 +256,32 @@ def checkDatabaseExist():
         cur = conn.cursor()
         
         #Create tables in the db
-        # ItemID text PRIMARY KEY UNIQUE,
+        # ID INTEGER PRIMARY KEY AUTOINCREMENT,
         # aID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ItemID, -4)) STORED,
         cur.execute("""CREATE TABLE item(
-			ItemID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-   			aID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ItemID, -4)) STORED,
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+   			ItemID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ID, -4)) STORED,
             itemName text,
-            itemPrice real)""")
+            itemPrice real,
+            quantity integer)""")
         # CusID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE customer(
-			CusID text PRIMARY KEY UNIQUE,
-            aID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || CusID, -4)) STORED,
+			ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            CusID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || CusID, -4)) STORED,
             fName text,
             lName text,
             address text)""")
             # OrderID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE orders(
-            OrderID text PRIMARY KEY UNIQUE,
-            aID TEXT GENERATED ALWAYS AS ('OID' || SUBSTR('0000' || OrderID, -4)) STORED,
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            OrderID TEXT GENERATED ALWAYS AS ('OID' || SUBSTR('0000' || OrderID, -4)) STORED,
             CusID integer REFERENCES customer(Cus),
             date text,
             disc real,
             FOREIGN KEY(CusID) REFERENCES customer(CusID))""")
         cur.execute("""CREATE TABLE transactions(
             OrderID text,
-            TransID text,
+            TransID INTEGER,
             aID TEXT GENERATED ALWAYS AS ('TID' || SUBSTR('0000' || TransID, -4)),
             ItemID text,
             PRIMARY KEY (OrderID, TransID),
@@ -314,8 +301,8 @@ def checkDatabaseExist():
 
         # cur.execute("INSERT INTO stock VALUES('0', '{0}', '{1}', '{2}', '{3}')".format(itemName, itemPrice, quantity, barcode))	
 
-        conn.commit()
-        conn.close()
+        # conn.commit()
+        # conn.close()
     except:
         print("Database and table found")
 
