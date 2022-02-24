@@ -56,11 +56,9 @@ class itemFromDB:
 		self.itemPrice = itemPrice
 		self.barcode = barcode
 		
-
-#Admin Menus
-def admin():
-	adminMenu = True
-	while adminMenu:
+def productManagement():
+	productMenu = True
+	while productMenu:
 		print("What would you like to do:")
 		print("Add New Product")
 		print("Delete Product")
@@ -68,16 +66,33 @@ def admin():
 		print("List All Products")
 		print("Exit")
 		print("Commands: Add, Delete, Edit, List, Exit")
-		adminMenuInput = input("> ").lower()
-		if adminMenuInput == "add":
+		productMenutInput = input("> ").lower()
+		if productMenutInput == "add":
 			addProduct()
-		if adminMenuInput == "delete":
+		elif productMenutInput == "delete":
 			deleteProduct()
-		if adminMenuInput == "edit":
+		elif productMenutInput == "edit":
 			editProduct()
-		if adminMenuInput == "list":
+		elif productMenutInput == "list":
 			listAllProducts()
-		if adminMenuInput == "exit":
+		elif productMenutInput == "exit":
+			productMenu = False
+
+#Admin Menus
+def admin():
+	adminMenu = True
+	while adminMenu:
+		print("What would you like to do:")
+		print("Manage Products")
+		print("Manage Customers")
+		print("Exit")
+		print("Commands: Product, Customer, Exit")
+		adminMenuInput = input("> ").lower()
+		if adminMenuInput == "product" or adminMenuInput == "p":
+			productManagement()
+		elif adminMenuInput == "customer" or adminMenuInput == "c":
+			deleteProduct()
+		elif adminMenuInput == "exit":
 			adminMenu = False
 
 def addProduct():
@@ -132,13 +147,6 @@ def deleteProduct():
                     idMenu = False
                 else:
                     try:
-                        # cur.execute("SELECT id FROM stock WHERE barcode = '{0}'".format(id))
-                        # idRemoved = cur.fetchone()[0]
-                        # cur.execute("SELECT * FROM stock")
-                        # listOfItems = cur.fetchall()
-                        # for item in listOfItems:
-                        #     if item[0] > idRemoved:
-                        #         cur.execute("UPDATE stock SET id='{0}' WHERE id='{1}'".format(item[0]-1, item[0]))
                         cur.execute("DELETE FROM item WHERE ItemID='{0}'".format(id))
                         print("Item Deleted")
                         idMenu = False
@@ -290,19 +298,6 @@ def checkDatabaseExist():
         conn.commit()
         conn.close()
 
-        #Add first item to reduce chances of error when scanning through table later on.
-        # conn = sqlite3.connect("inventory.db")
-        # cur = conn.cursor()
-        # print("Please add your first item to the database.")
-        # itemName = input("What is the name of the item? ")
-        # itemPrice = float(input("What is the price of your item? "))
-        # quantity = int(input("How much of this item do you have in stock? "))
-        # barcode = input("What is the barcode of the item (ID that will be used for POS) ")
-
-        # cur.execute("INSERT INTO stock VALUES('0', '{0}', '{1}', '{2}', '{3}')".format(itemName, itemPrice, quantity, barcode))	
-
-        # conn.commit()
-        # conn.close()
     except:
         print("Database and table found")
 
