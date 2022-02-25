@@ -78,6 +78,28 @@ def productManagement():
 		elif productMenutInput == "exit":
 			productMenu = False
 
+def customerManagement():
+	customerMenu = True
+	while customerMenu:
+		print("What would you like to do:")
+		print("Add a new Customer")
+		print("Edit a Customer")
+		print("Delete a Customer")
+		print("List all Customers")
+		print("Exit")
+		print("Commands: Add, Edit, Delete, List, Exit")
+		customerMenuInput = input("> ").lower()
+		if customerMenuInput == "add":
+			print("Add a Customer")
+		elif customerMenuInput == "edit":
+			print("Edit a Customer")
+		elif customerMenuInput == "delete":
+			print("Delte a Customer")
+		elif customerMenuInput == "list":
+			print("List all Customers")
+		elif customerMenuInput == "exit":
+			customerMenu = False
+
 #Admin Menus
 def admin():
 	adminMenu = True
@@ -91,7 +113,7 @@ def admin():
 		if adminMenuInput == "product" or adminMenuInput == "p":
 			productManagement()
 		elif adminMenuInput == "customer" or adminMenuInput == "c":
-			deleteProduct()
+			customerManagement()
 		elif adminMenuInput == "exit":
 			adminMenu = False
 
