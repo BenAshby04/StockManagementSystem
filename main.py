@@ -93,7 +93,7 @@ def customerManagement():
 		elif customerMenuInput == "edit":
 			editCustomer()
 		elif customerMenuInput == "delete":
-			print("Delte a Customer")
+			deleteCustomer()
 		elif customerMenuInput == "list":
 			listAllCustomers()
 		elif customerMenuInput == "exit":
@@ -281,6 +281,7 @@ def editCustomer():
                             else:
                                 print("ID not Found!")
 
+        #Address edit menu
         elif menuInput == "address" or menuInput == "a":
             addressMenu = True
             while addressMenu:
@@ -329,6 +330,68 @@ def editCustomer():
 
         elif menuInput == "exit":
             editCustomerMenu = False
+
+def deleteCustomer():
+    deleteCustomerMenu = True
+    conn = sqlite3.connect("inventory.db")
+    cur = conn.cursor()
+    while deleteCustomerMenu:
+        print("What would you like to do?")
+        print("Delete a Customer")
+        print("Exit")
+        print("Commands: Delete, Exit")
+        menuInput = input("> ").lower()
+        if menuInput == "delete" or menuInput == "d":
+            print("What is the Customer's First Name?")
+            cusFName = input("> ").lower()
+            cur.execute("SELECT * FROM customer WHERE fName = '{0}'".format(cusFName.capitalize()))
+            rows = cur.fetchall()
+            print("\nResults")
+            print("First Name | Last Name | Contact Number | Address | Customer ID")
+
+            for row in rows:
+                print("{0} | {1} | {2} | {3} | {4}".format(row[2], row[3], row[5], row[4], row [1]))
+
+            if len(rows) == 0:
+                print("No Results found")
+                conn.close()
+                deleteCustomerMenu = False
+                namesFound = False
+            else:
+                print()
+                namesFound = True
+
+            if namesFound == True:
+                enterID = True
+                while enterID:
+                    print("Please Confirm Details with Customer and enter the Customer ID")
+                    customerID = input("> ").upper()
+                    if customerID == "EXIT":
+                        namesFound = False
+                    else:
+                        cur.execute("SELECT * FROM customer WHERE CusID = '{0}'".format(customerID))
+                        rows = cur.fetchone()
+                        if len(rows) > 0:
+                            deleteMenu = True
+                            while deleteMenu:
+                                print("Are you sure you want to delete {0}'s account?".format(rows[2]))
+                                print("Type 'DELETE' if you want to delete the account!")
+                                print("If you want to go back type 'Exit'")
+                                print("WARNING: Once account is deleted you will not be able to recover the account!")
+                                delete = input("> ")
+                                if delete == "DELETE":
+                                    cur.execute("DELETE FROM customer WHERE CusID = '{0}'".format(customerID))
+                                    conn.commit()
+                                    conn.close()
+                                    deleteMenu = False
+                                    enterID = False
+                                    deleteCustomerMenu = False
+                                elif delete.lower() == "exit":
+                                    deleteMenu = False
+                                    enterID = False
+                                    deleteCustomerMenu = False
+        elif menuInput == "exit":
+            deleteCustomerMenu = False                                                         
 
 def listAllCustomers():
     conn = sqlite3.connect("inventory.db")
