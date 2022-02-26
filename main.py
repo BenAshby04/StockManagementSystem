@@ -146,7 +146,7 @@ def editCustomer():
             fNameMenu = True
             while fNameMenu:
                 try:
-                    print("What is the customers name that is registered with the account?")
+                    print("What is the customers first name that is registered with the account?")
                     oldFName = input("> ").lower()
                     cur.execute("SELECT * FROM customer WHERE fName = '{0}'".format(oldFName.capitalize()))
                     rows = cur.fetchall()
@@ -190,8 +190,8 @@ def editCustomer():
 
         #Last Name Edit
         elif menuInput == "lname" or menuInput == "l":
-            fNameMenu = True
-            while fNameMenu:
+            lNameMenu = True
+            while lNameMenu:
                 try:
                     print("What is the customers first name that is registered with the account?")
                     oldFName = input("> ").lower()
@@ -208,7 +208,7 @@ def editCustomer():
                 if len(rows) == 0:
                     print("Results not Found")
                     conn.close()
-                    fNameMenu = False
+                    lNameMenu = False
                     namesFound = False
                 else: 
                     print()
@@ -231,12 +231,56 @@ def editCustomer():
                                 conn.commit()
                                 conn.close()
                                 enterID = False
-                                fNameMenu = False
+                                lNameMenu = False
+                            else:
+                                print("ID not Found!")
+        #Number edit menu
+        elif menuInput == "number" or menuInput == "n":
+            numberMenu = True
+            while numberMenu:
+                try:
+                    print("What is the customers first name that is registered with the account?")
+                    oldFName = input("> ").lower()
+                    cur.execute("SELECT * FROM customer WHERE fName = '{0}'".format(oldFName.capitalize()))
+                    rows = cur.fetchall()
+                    print("\nResults:")
+                    print("First Name | Last Name | Contact Number | Address | Customer ID")
+                    for row in rows:
+                        print("{0} | {1} | {2} | {3} | {4}".format(row[2], row[3], row[5], row[4], row [1]))
+
+                except:
+                    print("SQL Error: Miss Input")
+                
+                if len(rows) == 0:
+                    print("Results not Found")
+                    conn.close()
+                    numberMenu = False
+                    namesFound = False
+                else: 
+                    print()
+                    namesFound = True
+                
+                if namesFound == True:
+                    enterID = True
+                    while enterID:
+                        print("Please Comfirm Details with Customer then enter the Customer ID")
+                        customerID = input("> ").upper()
+                        if customerID == "EXIT":
+                            enterID =False
+                        else: 
+                            cur.execute("SELECT * FROM customer WHERE CusID = '{0}'".format(customerID))
+                            rows = cur.fetchall()
+                            if len(rows) > 0:
+                                print("What is the customers new Contact Number?")
+                                number = input("> ").lower()
+                                cur.execute("UPDATE customer SET contactNumber = '{0}' WHERE CusID = '{1}'".format(number.capitalize(), customerID))
+                                conn.commit()
+                                conn.close()
+                                enterID = False
+                                numberMenu = False
                             else:
                                 print("ID not Found!")
 
-        elif menuInput == "number" or menuInput == "n":
-            print("Contact Number")
         elif menuInput == "address" or menuInput == "a":
             print("Address")
         elif menuInput == "exit":
