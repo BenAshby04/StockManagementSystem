@@ -91,11 +91,11 @@ def customerManagement():
 		if customerMenuInput == "add":
 			addCustomer()
 		elif customerMenuInput == "edit":
-			print("Edit a Customer")
+			editCustomer()
 		elif customerMenuInput == "delete":
 			print("Delte a Customer")
 		elif customerMenuInput == "list":
-			print("List all Customers")
+			listAllCustomers()
 		elif customerMenuInput == "exit":
 			customerMenu = False
 
@@ -114,14 +114,14 @@ def addCustomer():
             customerMenu = True
             while customerMenu:
                 print("What is the First Name of the Customer?")
-                fName = input()
+                fName = input().lower()
                 print("What is the Last Name of the Customer?")
-                lName = input()
+                lName = input().lower()
                 print("What is the Customers Contact Number?")
                 contactNumber = input()
                 print("What is the address of the Customer?")
                 address = input()
-                cur.execute("INSERT INTO customer (fName, lName, address, contactNumber) VALUES('{0}', '{1}', '{2}', '{3}')".format(fName,lName,address, contactNumber))
+                cur.execute("INSERT INTO customer (fName, lName, address, contactNumber) VALUES('{0}', '{1}', '{2}', '{3}')".format(fName.capitalize(),lName.capitalize(),address, contactNumber))
                 conn.commit()
                 customerMenu = False
         elif addCustomerInput == "exit":
@@ -130,6 +130,8 @@ def addCustomer():
 
 def editCustomer():
     editCustomerMenu = True
+    conn = sqlite3.connect("inventory.db")
+    cur = conn.cursor()
     while editCustomerMenu:
         print("What would you like to do?")
         print("Edit the Customers First Name?")
@@ -140,7 +142,21 @@ def editCustomer():
         print("Commands: fName, lName, number, address, exit")
         menuInput = input("> ").lower()
         if menuInput == "fName" or menuInput == "f":
-            print("First Name")
+            fNameMenu = True
+            try:
+                print("What is the customers name that is registered with the account?")
+                oldFName = input("> ").lower()
+                cur.execute("SELECT * FROM customer WHERE fName = '{0}'".format(oldFName.capitalize()))
+                rows = cur.fetchall()
+                print("\nResults:")
+                print("First Name | Last Name | Contact Number | Address | Customer ID")
+                for row in rows:
+                    print("{0} | {1} | {2} | {3} | {4}".format(row[2], row[3], row[5], row[4], row [1]))
+                conn.close()
+                print()
+            except:
+                print("SQL Error: Miss Input")
+                
         elif menuInput == "lName" or menuInput == "l":
             print("Last Name")
         elif menuInput == "number" or menuInput == "n":
@@ -149,6 +165,20 @@ def editCustomer():
             print("Address")
         elif menuInput == "exit":
             editCustomerMenu = False
+
+def listAllCustomers():
+    conn = sqlite3.connect("inventory.db")
+    cur = conn.cursor()
+    
+    cur.execute("SELECT * FROM customer ORDER BY CusID")
+    rows = cur.fetchall()
+    print()
+    print("Customers:")
+    print("First Name | Last Name | Contact Number | Address | Customer ID")
+    for row in rows:
+        print("{0} | {1} | {2} | {3} | {4}".format(row[2], row[3], row[5], row[4], row [1]))
+    conn.close()
+    print()
 
 #Product Mangement
 def productManagement():
@@ -248,7 +278,6 @@ def listAllProducts():
         print("{0} | {1} | {2} | {3}".format(row[2], row[3], row[4], row[1]))
     conn.close()
     print()
-    return 0
 
 def editProduct():
 	editMenu = True
