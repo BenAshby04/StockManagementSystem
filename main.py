@@ -56,6 +56,101 @@ class itemFromDB:
 		self.itemPrice = itemPrice
 		self.barcode = barcode
 		
+
+
+
+#Admin Menus
+def admin():
+	adminMenu = True
+	while adminMenu:
+		print("What would you like to do:")
+		print("Manage Products")
+		print("Manage Customers")
+		print("Exit")
+		print("Commands: Product, Customer, Exit")
+		adminMenuInput = input("> ").lower()
+		if adminMenuInput == "product" or adminMenuInput == "p":
+			productManagement()
+		elif adminMenuInput == "customer" or adminMenuInput == "c":
+			customerManagement()
+		elif adminMenuInput == "exit":
+			adminMenu = False
+
+#Customer Mangement
+def customerManagement():
+	customerMenu = True
+	while customerMenu:
+		print("What would you like to do:")
+		print("Add a new Customer")
+		print("Edit a Customer")
+		print("Delete a Customer")
+		print("List all Customers")
+		print("Exit")
+		print("Commands: Add, Edit, Delete, List, Exit")
+		customerMenuInput = input("> ").lower()
+		if customerMenuInput == "add":
+			addCustomer()
+		elif customerMenuInput == "edit":
+			print("Edit a Customer")
+		elif customerMenuInput == "delete":
+			print("Delte a Customer")
+		elif customerMenuInput == "list":
+			print("List all Customers")
+		elif customerMenuInput == "exit":
+			customerMenu = False
+
+def addCustomer():
+    addCustomer = True
+    conn = sqlite3.connect('inventory.db')
+    cur = conn.cursor()
+    while addCustomer:
+        print("Welcome to the Add Customer menu:")
+        print("What would you like to do?")
+        print("Add")
+        print("Exit")
+        print("Commands: add, exit")
+        addCustomerInput = input("> ").lower()
+        if addCustomerInput == "add":
+            customerMenu = True
+            while customerMenu:
+                print("What is the First Name of the Customer?")
+                fName = input()
+                print("What is the Last Name of the Customer?")
+                lName = input()
+                print("What is the Customers Contact Number?")
+                contactNumber = input()
+                print("What is the address of the Customer?")
+                address = input()
+                cur.execute("INSERT INTO customer (fName, lName, address, contactNumber) VALUES('{0}', '{1}', '{2}', '{3}')".format(fName,lName,address, contactNumber))
+                conn.commit()
+                customerMenu = False
+        elif addCustomerInput == "exit":
+            conn.close()
+            addCustomer = False
+
+def editCustomer():
+    editCustomerMenu = True
+    while editCustomerMenu:
+        print("What would you like to do?")
+        print("Edit the Customers First Name?")
+        print("Edit the Customers Last Name?")
+        print("Edit the Customers Contact Number?")
+        print("Edit the Customers Address?")
+        print("Exit")
+        print("Commands: fName, lName, number, address, exit")
+        menuInput = input("> ").lower()
+        if menuInput == "fName" or menuInput == "f":
+            print("First Name")
+        elif menuInput == "lName" or menuInput == "l":
+            print("Last Name")
+        elif menuInput == "number" or menuInput == "n":
+            print("Contact Number")
+        elif menuInput == "address" or menuInput == "a":
+            print("Address")
+        elif menuInput == "exit":
+            editCustomerMenu = False
+
+#Product Mangement
 def productManagement():
 	productMenu = True
 	while productMenu:
@@ -78,45 +173,6 @@ def productManagement():
 		elif productMenutInput == "exit":
 			productMenu = False
 
-def customerManagement():
-	customerMenu = True
-	while customerMenu:
-		print("What would you like to do:")
-		print("Add a new Customer")
-		print("Edit a Customer")
-		print("Delete a Customer")
-		print("List all Customers")
-		print("Exit")
-		print("Commands: Add, Edit, Delete, List, Exit")
-		customerMenuInput = input("> ").lower()
-		if customerMenuInput == "add":
-			print("Add a Customer")
-		elif customerMenuInput == "edit":
-			print("Edit a Customer")
-		elif customerMenuInput == "delete":
-			print("Delte a Customer")
-		elif customerMenuInput == "list":
-			print("List all Customers")
-		elif customerMenuInput == "exit":
-			customerMenu = False
-
-#Admin Menus
-def admin():
-	adminMenu = True
-	while adminMenu:
-		print("What would you like to do:")
-		print("Manage Products")
-		print("Manage Customers")
-		print("Exit")
-		print("Commands: Product, Customer, Exit")
-		adminMenuInput = input("> ").lower()
-		if adminMenuInput == "product" or adminMenuInput == "p":
-			productManagement()
-		elif adminMenuInput == "customer" or adminMenuInput == "c":
-			customerManagement()
-		elif adminMenuInput == "exit":
-			adminMenu = False
-
 def addProduct():
 	addMenu = True
 	conn = sqlite3.connect("inventory.db")
@@ -131,7 +187,6 @@ def addProduct():
 		menuInput = input("> ").lower()
 		if menuInput == "add":
 			itemMenu = True
-			idMenu = True
 			while itemMenu:
 				itemName = input("What is the name of the item? ")
 				itemPrice = float(input("What is the price of the item? "))
@@ -141,11 +196,10 @@ def addProduct():
 				cur.execute("INSERT INTO item (itemName, itemPrice, quantity) VALUES('{0}','{1}','{2}')".format(itemName,itemPrice, quantity))
 				conn.commit()
 				itemMenu = False
-				idMenu = False
 			
 		if menuInput == "exit":
 			conn.close()
-			return 0
+			addMenu()
 
 def deleteProduct():
     deleteMenu = True
@@ -297,14 +351,15 @@ def checkDatabaseExist():
         # CusID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE customer(
 			ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            CusID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || CusID, -4)) STORED,
+            CusID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || ID, -4)) STORED,
             fName text,
             lName text,
-            address text)""")
+            address text,
+            contactNumber text)""")
             # OrderID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE orders(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            OrderID TEXT GENERATED ALWAYS AS ('OID' || SUBSTR('0000' || OrderID, -4)) STORED,
+            OrderID TEXT GENERATED ALWAYS AS ('OID' || SUBSTR('0000' || ID, -4)) STORED,
             CusID integer REFERENCES customer(Cus),
             date text,
             disc real,
