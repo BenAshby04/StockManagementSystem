@@ -1,65 +1,8 @@
 from itertools import count
 from math import fabs
 import sqlite3
-from tkinter import INSERT
-from tkinter.tix import Tree
 from typing import Counter
 from datetime import date
-
-#Classes
-class transaction: 
-    def __init__(self, totalPrice, items):
-        self.items = items
-        self.totalPrice = totalPrice
-        self.idsUsed = []
-    def sale(self):
-        items = self.items
-        totalPrice = self.totalPrice
-        conn = sqlite3.connect("inventory.db")
-        cur = conn.cursor()
-        self.counter = Counter(items)
-        textForRecord = ""
-        idFound = False
-        
-        print(self.counter)
-            
-        for item in items:
-            idFound = False
-            for id in self.idsUsed:
-                # print("id: {0} item[0]: {1}".format(id,item[0]))
-                if id == item[0]: idFound = True
-            if idFound == False:
-                newItem = itemFromDB(item[1], item[2],item[4])
-                # textForRecord = textForRecord + "{0} | {1} | {2} \n".format(str(item[1]), str(item[2]), str(item[4]))
-                # print(self.counter[item])
-                self.idsUsed.append(item[0])
-        print("\n\n\n\n")
-        for counter in self.counter:
-            print("{0} | {1}".format(counter[0], self.counter[counter]))
-            textForRecord = textForRecord + "Quantity: {2} | Item Name: {0} | Item Price: {1} | Barcode: {3}\n".format(str(counter[1]),str(counter[2]),str(self.counter[counter]), str(counter[4]))
-            
-        try:
-            transactonNumber = cur.execute("SELECT MAX(transaction_number) FROM transactions").fetchone()[0] +1
-        except:
-            transactonNumber = 0
-            print("Transaction Number Failed")
-        
-        try:
-            cur.execute("INSERT INTO transactions VALUES('{0}', '{1}', '{2}')".format(transactonNumber,textForRecord,totalPrice))
-            
-            conn.commit()
-            conn.close()
-        except:
-            print("Failed to complete sale")
-            
-class itemFromDB:
-	def __init__(self, itemName, itemPrice, barcode):
-		self.itemName = itemName
-		self.itemPrice = itemPrice
-		self.barcode = barcode
-		
-
-
 
 #Admin Menus
 def admin():
@@ -587,57 +530,35 @@ def pos():
                     
                     #Start adding items to transaction
                     addTransaction = True
+                    subtotal = 0.0
                     while addTransaction:
                         listAllProducts()
+                        print("Current SubTotal: {0}".format(subtotal))
                         print("Please enter a Item ID or type 'exit' to go back")
                         itemID = input("> ").upper()
+                        
                         if itemID == "EXIT":
+                            cur.execute("UPDATE orders SET subtotal = '{0}' WHERE OrderID = '{1}'".format(subtotal,orderID[1]))
+                            conn.commit()
                             addTransaction = False
                         else:
-                            cur.execute("SELECT * FROM item WHERE itemID = '{0}'".format(itemID))
-                            item = cur.fetchone()
-                            if len(item) > 0:
-                                cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID[1],item[1]))
-                                conn.commit()
-                    
+                            try:
+                                cur.execute("SELECT * FROM item WHERE itemID = '{0}'".format(itemID))
+                                item = cur.fetchone()
+                                
+                                if len(item) > 0:
+                                    cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID[1],item[1]))
+                                    subtotal = subtotal + item[3]
+                                    conn.commit()
+                            except:
+                                print("Error: Item Not Found")
+                        
                 elif account == "no" or account == "n":
                     #Create a account
                     addCustomer()
                 elif account == "exit" or account == "e":
                     lookingForAccount = False
-            # posAction = True	
-            # itemList = []
-            # while posAction:
-            #     listAllProducts()
-            #     print("Please type in the ID of the item you want to add to the order? or use one of the commands below.")
-            #     print("Commands: exit, sale ")
-            #     id = input("> ")
-
-            #     if id == "exit":
-            #         posAction = False
-            #     if id == "sale":
-            #         totalPrice = 0.0
-            #         for i in range(len(itemList)):
-            #             totalPrice = totalPrice + itemList[i][3]
-            #         # for item2 in itemList:
-            #         # 	totalPrice =+ item2[2]
-            #         print(totalPrice)
-            #         posAction = False
-            #         # newTransaction = transaction(totalPrice, itemList)
-            #         # newTransaction.sale()
-
-                
-            # else:
-            #     try:
-            #         cur.execute("SELECT * FROM item WHERE ItemID='{0}'".format(id))
-            #         item = cur.fetchall()[0]
-            #         itemList.append(item)
-
-            #         print(itemList)
-
-            #     except:
-            #         print("Item not found")
-	
+            
         elif posInput == "exit":
             posMenu = False
     
@@ -648,15 +569,12 @@ def checkDatabaseExist():
         cur = conn.cursor()
         
         #Create tables in the db
-        # ID INTEGER PRIMARY KEY AUTOINCREMENT,
-        # aID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ItemID, -4)) STORED,
         cur.execute("""CREATE TABLE item(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
    			ItemID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ID, -4)) STORED,
             itemName text,
             itemPrice real,
             quantity integer)""")
-        # CusID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE customer(
 			ID INTEGER PRIMARY KEY AUTOINCREMENT,
             CusID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || ID, -4)) STORED,
@@ -664,13 +582,12 @@ def checkDatabaseExist():
             lName text,
             address text,
             contactNumber text)""")
-            # OrderID text PRIMARY KEY UNIQUE,
         cur.execute("""CREATE TABLE orders(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             OrderID TEXT GENERATED ALWAYS AS ('OID' || SUBSTR('0000' || ID, -4)) STORED,
             CusID integer REFERENCES customer(Cus),
             date text,
-            disc real,
+            subtotal real,
             FOREIGN KEY(CusID) REFERENCES customer(CusID))""")
         cur.execute("""CREATE TABLE transactions(
             OrderID text,
