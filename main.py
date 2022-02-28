@@ -3,6 +3,7 @@ from math import fabs
 import sqlite3
 from tkinter import INSERT
 from typing import Counter
+from datetime import date
 
 #Classes
 class transaction: 
@@ -542,52 +543,80 @@ def editProduct():
 
 #POS
 def pos():
-	posMenu = True
-	conn = sqlite3.connect("inventory.db")
-	cur = conn.cursor()
-	while posMenu:
-		print("Welcome to the POS Menu")
-		print("What would you like to do!")
-		print("POS")
-		print("Exit")
-		print("Commands: POS, Exit")
-		posInput = input("> ").lower()
-		if posInput == "pos":
-			posAction = True	
-			itemList = []
-			while posAction:
-				listAllProducts()
-				print("Please type in the ID of the item you want to add to the order? or use one of the commands below.")
-				print("Commands: exit, sale ")
-				id = input("> ")
-				
-				if id == "exit":
-					posAction = False
-				if id == "sale":
-					totalPrice = 0.0
-					for i in range(len(itemList)):
-						totalPrice = totalPrice + itemList[i][3]
-					# for item2 in itemList:
-					# 	totalPrice =+ item2[2]
-					print(totalPrice)
-					posAction = False
-					# newTransaction = transaction(totalPrice, itemList)
-					# newTransaction.sale()
+    posMenu = True
+    conn = sqlite3.connect("inventory.db")
+    cur = conn.cursor()
+    while posMenu:
+        print("Welcome to the POS Menu")
+        print("What would you like to do!")
+        print("POS")
+        print("Exit")
+        print("Commands: POS, Exit")
+        posInput = input("> ").lower()
+        if posInput == "pos":
+            lookingForAccount = True
+            while lookingForAccount:
+                print("Does the Customer have a account?")
+                print("Commands: Yes, No, Exit")
+                account = input("> ").lower()
+                if account == "yes" or account == "y":
+                    #Continue Transaction
+                    print("What is the customers first name?")
+                    fName = input("> ").lower()
+                    cur.execute("SELECT * FROM customer WHERE fName = '{0}'".format(fName.capitalize()))
+                    rows = cur.fetchall()
+                    print("First Name | Last Name | Contact Number | Address | Customer ID")
+                    for row in rows:
+                        print("{0} | {1} | {2} | {3} | {4}".format(row[2], row[3], row[5], row[4], row [1]))
+                    print("Confirm the Details with the customer, then enter their Customer ID")
+                    customerID = input("> ").upper()
+                    cur.execute("SELECT * FROM customer WHERE CusID = '{0}'".format(customerID))
+                    Customer = cur.fetchone()
+                    today = date.today()
+                    cur.execute("INSERT INTO orders (CusID, date) VALUES ('{0}', '{1}')".format(Customer[1], today.strftime("%d/%m/%Y")))
+                    conn.commit()
+                    
+                    
+                elif account == "no" or account == "n":
+                    #Create a account
+                    addCustomer()
+                elif account == "exit" or account == "e":
+                    lookingForAccount = False
+            # posAction = True	
+            # itemList = []
+            # while posAction:
+            #     listAllProducts()
+            #     print("Please type in the ID of the item you want to add to the order? or use one of the commands below.")
+            #     print("Commands: exit, sale ")
+            #     id = input("> ")
 
-					
-				else:
-					try:
-						cur.execute("SELECT * FROM item WHERE ItemID='{0}'".format(id))
-						item = cur.fetchall()[0]
-						itemList.append(item)
+            #     if id == "exit":
+            #         posAction = False
+            #     if id == "sale":
+            #         totalPrice = 0.0
+            #         for i in range(len(itemList)):
+            #             totalPrice = totalPrice + itemList[i][3]
+            #         # for item2 in itemList:
+            #         # 	totalPrice =+ item2[2]
+            #         print(totalPrice)
+            #         posAction = False
+            #         # newTransaction = transaction(totalPrice, itemList)
+            #         # newTransaction.sale()
 
-						print(itemList)
+                
+            # else:
+            #     try:
+            #         cur.execute("SELECT * FROM item WHERE ItemID='{0}'".format(id))
+            #         item = cur.fetchall()[0]
+            #         itemList.append(item)
 
-					except:
-						print("Item not found")
+            #         print(itemList)
+
+            #     except:
+            #         print("Item not found")
 	
-		elif posInput == "exit":
-			posMenu = False
+        elif posInput == "exit":
+            posMenu = False
     
 
 def checkDatabaseExist():
@@ -622,8 +651,8 @@ def checkDatabaseExist():
             FOREIGN KEY(CusID) REFERENCES customer(CusID))""")
         cur.execute("""CREATE TABLE transactions(
             OrderID text,
-            TransID INTEGER,
-            aID TEXT GENERATED ALWAYS AS ('TID' || SUBSTR('0000' || TransID, -4)),
+            ID INTEGER AUTOINCREMENT,
+            TransID TEXT GENERATED ALWAYS AS ('TID' || SUBSTR('0000' || ID, -4)),
             ItemID text,
             PRIMARY KEY (OrderID, TransID),
             FOREIGN KEY(OrderID) REFERENCES orders(OrderID),
