@@ -2,6 +2,7 @@ from itertools import count
 from math import fabs
 import sqlite3
 from tkinter import INSERT
+from tkinter.tix import Tree
 from typing import Counter
 from datetime import date
 
@@ -131,9 +132,10 @@ def addCustomer():
 
 def editCustomer():
     editCustomerMenu = True
-    conn = sqlite3.connect("inventory.db")
-    cur = conn.cursor()
+    
     while editCustomerMenu:
+        conn = sqlite3.connect("inventory.db")
+        cur = conn.cursor()
         print("What would you like to do?")
         print("Edit the Customers First Name?")
         print("Edit the Customers Last Name?")
@@ -158,6 +160,7 @@ def editCustomer():
 
                 except:
                     print("SQL Error: Miss Input")
+                    namesFound = False
                 
                 if len(rows) == 0:
                     print("Results not Found")
@@ -205,6 +208,7 @@ def editCustomer():
 
                 except:
                     print("SQL Error: Miss Input")
+                    namesFound = False
                 
                 if len(rows) == 0:
                     print("Results not Found")
@@ -251,6 +255,7 @@ def editCustomer():
 
                 except:
                     print("SQL Error: Miss Input")
+                    namesFound = False
                 
                 if len(rows) == 0:
                     print("Results not Found")
@@ -287,6 +292,7 @@ def editCustomer():
             addressMenu = True
             while addressMenu:
                 try:
+                    conn = sqlite3.connect("inventory.db")
                     print("What is the customers first name that is registered with the account?")
                     oldFName = input("> ").lower()
                     cur.execute("SELECT * FROM customer WHERE fName = '{0}'".format(oldFName.capitalize()))
@@ -298,6 +304,7 @@ def editCustomer():
 
                 except:
                     print("SQL Error: Miss Input")
+                    namesFound = False
                 
                 if len(rows) == 0:
                     print("Results not Found")
@@ -457,7 +464,7 @@ def addProduct():
 			
 		if menuInput == "exit":
 			conn.close()
-			addMenu()
+			addMenu = False
 
 def deleteProduct():
     deleteMenu = True
@@ -575,7 +582,23 @@ def pos():
                     today = date.today()
                     cur.execute("INSERT INTO orders (CusID, date) VALUES ('{0}', '{1}')".format(Customer[1], today.strftime("%d/%m/%Y")))
                     conn.commit()
+                    cur.execute("SELECT * FROM orders WHERE OrderID = (SELECT MAX(OrderID) FROM orders)")
+                    orderID = cur.fetchone()
                     
+                    #Start adding items to transaction
+                    addTransaction = True
+                    while addTransaction:
+                        listAllProducts()
+                        print("Please enter a Item ID or type 'exit' to go back")
+                        itemID = input("> ").upper()
+                        if itemID == "EXIT":
+                            addTransaction = False
+                        else:
+                            cur.execute("SELECT * FROM item WHERE itemID = '{0}'".format(itemID))
+                            item = cur.fetchone()
+                            if len(item) > 0:
+                                cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID[1],item[1]))
+                                conn.commit()
                     
                 elif account == "no" or account == "n":
                     #Create a account
@@ -651,10 +674,9 @@ def checkDatabaseExist():
             FOREIGN KEY(CusID) REFERENCES customer(CusID))""")
         cur.execute("""CREATE TABLE transactions(
             OrderID text,
-            ID INTEGER AUTOINCREMENT,
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
             TransID TEXT GENERATED ALWAYS AS ('TID' || SUBSTR('0000' || ID, -4)),
             ItemID text,
-            PRIMARY KEY (OrderID, TransID),
             FOREIGN KEY(OrderID) REFERENCES orders(OrderID),
             FOREIGN KEY(ItemID) REFERENCES item(ItemID))""")
         conn.commit()
