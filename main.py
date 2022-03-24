@@ -152,9 +152,9 @@ class addProduct():
         
 
     def commitToDB(self):
-        productName = self.nameText.get("1.0", "end")
-        productPrice = self.priceText.get("1.0", "end")
-        quantity = self.quantityText.get("1.0", "end")
+        productName = self.nameText.get("1.0", "end").strip()
+        productPrice = self.priceText.get("1.0", "end").strip()
+        quantity = self.quantityText.get("1.0", "end").strip()
         
         conn = sqlite3.connect("inventory.db")
         cur = conn.cursor()
@@ -245,10 +245,10 @@ class addCustomers():
         self.addressText = tk.Text(master=addCustomerFrame)
         self.addressText.place(x=230,y=150,width=200,height=20)
     def commitToDB(self):
-        fName = self.fNameText.get("1.0", "end")
-        lName = self.lNameText.get("1.0", "end")
-        contactNum = self.contactText.get("1.0", "end")
-        address = self.addressText.get("1.0","end")
+        fName = self.fNameText.get("1.0", "end").strip()
+        lName = self.lNameText.get("1.0", "end").strip()
+        contactNum = self.contactText.get("1.0", "end").strip()
+        address = self.addressText.get("1.0","end").strip()
         
         conn = sqlite3.connect("inventory.db")
         cur = conn.cursor()
@@ -283,14 +283,29 @@ class editCustomers():
         exitButton.place(x=5,y=5, width=100,height=50)
         
         searchButton = tk.Button(master=editCustomerFrame, text="Search")
+        searchButton['command'] = self.findDataDB
         searchButton.place(x=200,y=240, width=100,height=50)
         
         #Textbox Configuration
-        fNameText = tk.Text(master=editCustomerFrame)
-        fNameText.place(x=230, y=60, width=200,height=20)
+        self.fNameText = tk.Text(master=editCustomerFrame)
+        self.fNameText.place(x=230, y=60, width=200,height=20)
         
-        lNameText = tk.Text(master= editCustomerFrame)
-        lNameText.place(x=230,y=90,width=200,height=20)
+        self.lNameText = tk.Text(master= editCustomerFrame)
+        self.lNameText.place(x=230,y=90,width=200,height=20)
+
+    def findDataDB(self):
+        fName = self.fNameText.get("1.0", "end").strip()
+        lName = self.lNameText.get("1.0", "end").strip()
+        
+        conn = sqlite3.connect("inventory.db")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM customer WHERE fName = '{0}' OR lName = '{1}'".format(fName, lName))
+        rows = cur.fetchall()
+        print("Results:")
+        for row in rows:
+            print("{0},{1},{2},{3},{4}".format(row[2],row[3],row[5],row[4],row[1]))
+        conn.close()
+
 
 #POS Stuff
 class POSMenu():
