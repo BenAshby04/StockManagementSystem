@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 import sqlite3
+from turtle import width
 
 class App(tk.Tk):
     def __init__(self):
@@ -73,7 +74,8 @@ class AdminMenu():
     def manageProduct(self):
         print("Manage Product Selected")
         manageProducts(self.win)
-    
+
+#Product Stuff
 class manageProducts():
     def __init__(self,previousWin):
         #Window Configuration
@@ -161,7 +163,7 @@ class addProduct():
         conn.close()
         print("Product added: {0}, {1}, {2}".format(productName, productPrice, quantity))
 
-
+#Customer Stuff
 class manageCustomers():
     def __init__(self,previousWindow):
         #Window Configuration
@@ -185,12 +187,15 @@ class manageCustomers():
         addCustomer.place(x=90,y=60,width=125,height=50)
         
         editCustomer = tk.Button(master=manageCustomerFrame,text="Edit a Customer")
+        editCustomer['command'] = self.editCustomer
         editCustomer.place(x=90,y=130, width=125,height=50)
         
         deleteCustomer = tk.Button(master=manageCustomerFrame,text="Delete a Customer")
         deleteCustomer.place(x=90,y=200,width=125,height=50)
     def addCustomer(self):
         addCustomers(self.win)
+    def editCustomer(self):
+        editCustomers(self.win)
 
 class addCustomers():
     def __init__(self, previousWindow):
@@ -252,6 +257,42 @@ class addCustomers():
         conn.close()
         print("Customer added: {0}, {1}, {2}, {3}".format(fName, lName, contactNum, address))
 
+class editCustomers():
+    def __init__(self, previousWindow):
+        #Window Configuration
+        self.win = tk.Toplevel(previousWindow)
+        self.win.title("Edit a Customer")
+        self.win.geometry("500x300")
+        self.win.rowconfigure(0, weight=1)
+        self.win.columnconfigure(1, weight=1)
+        
+        #Frame Configuration
+        editCustomerFrame = tk.Frame(master=self.win)
+        editCustomerFrame.grid(row=0,column=1, sticky="nsew")
+        
+        #Label Configuration
+        fNameLabel = tk.Label(master=editCustomerFrame, text="First Name:")
+        fNameLabel.place(x=115, y=60, width=100, height=20)
+        
+        lNameLabel = tk.Label(master=editCustomerFrame, text="Last Name:")
+        lNameLabel.place(x=115, y=90, width=100, height=20)
+        
+        #Button Configuration
+        exitButton = tk.Button(master=editCustomerFrame, text="Exit")
+        exitButton['command'] = self.win.destroy
+        exitButton.place(x=5,y=5, width=100,height=50)
+        
+        searchButton = tk.Button(master=editCustomerFrame, text="Search")
+        searchButton.place(x=200,y=240, width=100,height=50)
+        
+        #Textbox Configuration
+        fNameText = tk.Text(master=editCustomerFrame)
+        fNameText.place(x=230, y=60, width=200,height=20)
+        
+        lNameText = tk.Text(master= editCustomerFrame)
+        lNameText.place(x=230,y=90,width=200,height=20)
+
+#POS Stuff
 class POSMenu():
     def __init__(self):
         #Window Configuration
