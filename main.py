@@ -1,8 +1,13 @@
 import os
 import tkinter as tk
 import sqlite3
+from tkinter.messagebox import showinfo
 from turtle import width
 
+from telegram import Sticker
+
+
+currentProfile = []
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -244,6 +249,7 @@ class addCustomers():
         
         self.addressText = tk.Text(master=addCustomerFrame)
         self.addressText.place(x=230,y=150,width=200,height=20)
+        
     def commitToDB(self):
         fName = self.fNameText.get("1.0", "end").strip()
         lName = self.lNameText.get("1.0", "end").strip()
@@ -300,12 +306,134 @@ class editCustomers():
         conn = sqlite3.connect("inventory.db")
         cur = conn.cursor()
         cur.execute("SELECT * FROM customer WHERE fName = '{0}' OR lName = '{1}'".format(fName, lName))
-        rows = cur.fetchall()
+        profiles = cur.fetchall()
         print("Results:")
-        for row in rows:
-            print("{0},{1},{2},{3},{4}".format(row[2],row[3],row[5],row[4],row[1]))
+        for profile in profiles:
+            print("{0},{1},{2},{3},{4}".format(profile[2],profile[3],profile[5],profile[4],profile[1]))
         conn.close()
+        if len(profiles) == 0:
+            showinfo(title="Warning", message="There isn't any profiles with these details!")
+        else:
+            SelectProfile(self.win, profiles)
 
+class SelectProfile():
+    def __init__(self,previousWindow, possibleProfiles):
+        #Window Configuration
+        self.profiles = possibleProfiles
+        self.currentProfile = 0
+        self.win = tk.Toplevel(previousWindow)
+        self.win.title("Select a Profile")
+        self.win.geometry("500x300")
+        self.win.rowconfigure(0,weight=1)
+        self.win.columnconfigure(1, weight=1)
+        
+        #Frame Configuration
+        selectProfileFrame = tk.Frame(master=self.win)
+        selectProfileFrame.grid(row=0,column=1,sticky="nsew")
+        
+        #Button Configuration
+        exitButton = tk.Button(master=selectProfileFrame, text="Exit")
+        exitButton['command'] = self.win.destroy
+        exitButton.place(x=5,y=5,width=100,height=50)
+        
+        selectButton = tk.Button(master=selectProfileFrame, text="Submit")
+        selectButton.place(x=200, y=245,width=100, height=50)
+        
+        nextButton = tk.Button(master=selectProfileFrame, text="Next")
+        nextButton['command'] = self.nextProfile
+        nextButton.place(x=395, y=175, width=100,height=50)
+        
+        previousButton = tk.Button(master=selectProfileFrame, text="Previous")
+        previousButton['command'] = self.previousProfile
+        previousButton.place(x=5, y=175, width=100, height=50)
+        
+        #Label Configuration
+        fNameLabel = tk.Label(master=selectProfileFrame, text="First Name:")
+        fNameLabel.place(x=115,y=60, width=100,height=20)
+        
+        lNameLabel = tk.Label(master=selectProfileFrame, text="Last Name:")
+        lNameLabel.place(x=115,y=90, width=100, height=20)
+        
+        contactLabel = tk.Label(master=selectProfileFrame, text="Contact Number:")
+        contactLabel.place(x=91, y=120,width=110, height=20)
+        
+        addressLabel = tk.Label(master=selectProfileFrame, text="Address:")
+        addressLabel.place(x=120, y=150, width=100,height=20)
+        
+        #Textbox Configuration
+        self.fNameText = tk.Text(master=selectProfileFrame)
+        self.fNameText.place(x=230,y=60,width=200,height=20)
+        
+        self.lNameText = tk.Text(master=selectProfileFrame)
+        self.lNameText.place(x=230,y=90,width=200,height=20)
+        
+        self.contactText = tk.Text(master=selectProfileFrame)
+        self.contactText.place(x=230,y=120,width=200,height=20)
+        
+        self.addressText = tk.Text(master=selectProfileFrame)
+        self.addressText.place(x=230,y=150,width=200,height=20)
+        
+        self.firstProfile()
+        print("Current Profile: " + str(self.currentProfile))
+        
+    def firstProfile(self):
+        #This functions loads the first profile from the SQL Query into the textboxes on screen
+        firstProfile = self.profiles[0]
+        self.fNameText.insert("1.0", firstProfile[2])
+        self.lNameText.insert("1.0", firstProfile[3])
+        self.addressText.insert("1.0", firstProfile[4])
+        self.contactText.insert("1.0", firstProfile[5])
+        
+    def nextProfile(self):
+        #This function will load the next profile in the list
+        #If it reaches the end of the list it will loop back around to the first profile.
+        
+        #Makes the Textboxes Blank
+        self.fNameText.delete("1.0",'end')
+        self.lNameText.delete("1.0",'end')
+        self.addressText.delete("1.0",'end')
+        self.contactText.delete("1.0",'end')
+        
+        # print(len(self.profiles))
+        self.currentProfile = self.currentProfile +1
+        
+        #Checks if self.currentProfile goes over the number of profiles found and if it is sets it back to 0
+        if (self.currentProfile + 1) > len(self.profiles):
+            self.currentProfile = 0
+        profile = self.profiles[self.currentProfile]
+        
+        #Updates textboxes
+        self.fNameText.insert("1.0", profile[2])
+        self.lNameText.insert("1.0", profile[3])
+        self.addressText.insert("1.0", profile[4])
+        self.contactText.insert("1.0", profile[5])
+        
+    def previousProfile(self):
+        #This functions will the load the previous profile in the list
+        #If it is the first item in the list it will loop to the last profile in the list
+        
+        #Makes the Textboxes Blank
+        self.fNameText.delete("1.0",'end')
+        self.lNameText.delete("1.0",'end')
+        self.addressText.delete("1.0",'end')
+        self.contactText.delete("1.0",'end')
+        
+        # print(len(self.profiles))
+        self.currentProfile = self.currentProfile - 1
+        #Checks if self.currentProfile is below 0 if it is it will set it to the max of the list
+        if(self.currentProfile) < 0:
+            self.currentProfile = (len(self.profiles)-1)
+        #Grabs profile from list
+        profile = self.profiles[self.currentProfile]
+        #Updates textboxes
+        self.fNameText.insert("1.0", profile[2])
+        self.lNameText.insert("1.0", profile[3])
+        self.addressText.insert("1.0", profile[4])
+        self.contactText.insert("1.0", profile[5])
+    
+    def submit(self):
+        currentProfile = self.profiles[self.currentProfile]
+        #Goto edit values to make the changes to that profile.
 
 #POS Stuff
 class POSMenu():
