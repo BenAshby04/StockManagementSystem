@@ -337,6 +337,7 @@ class SelectProfile():
         exitButton.place(x=5,y=5,width=100,height=50)
         
         selectButton = tk.Button(master=selectProfileFrame, text="Submit")
+        selectButton['command'] = self.submit
         selectButton.place(x=200, y=245,width=100, height=50)
         
         nextButton = tk.Button(master=selectProfileFrame, text="Next")
@@ -432,9 +433,90 @@ class SelectProfile():
         self.contactText.insert("1.0", profile[5])
     
     def submit(self):
-        currentProfile = self.profiles[self.currentProfile]
         #Goto edit values to make the changes to that profile.
+        print(self.profiles[self.currentProfile])
+        editCustomerProfile(self.win, self.profiles[self.currentProfile])
 
+    
+class editCustomerProfile():
+    def __init__(self, previousWin,currentProfiles):
+        #Window Configuration
+        self.profile = currentProfiles
+        self.win = tk.Toplevel(previousWin)
+        self.win.title("Edit the Custoemr Profile")
+        self.win.geometry("500x300")
+        self.win.rowconfigure(0,weight=1)
+        self.win.columnconfigure(1,weight=1)
+        
+        #Frame Configuration
+        editCustomerFrame = tk.Frame(master=self.win)
+        editCustomerFrame.grid(row=0, column=1, sticky="nsew")
+        
+        #Button Configuration
+        exitButton = tk.Button(master= editCustomerFrame,text="Exit")
+        exitButton['command'] =self.win.destroy
+        exitButton.place(x=5,y=5,width=100, height=50)
+        
+        submitButton = tk.Button(master= editCustomerFrame, text="Submit")
+        submitButton['command'] = self.commitToDB
+        submitButton.place(x=395,y=245,width=100,height=50 )
+        
+        #Label Configuration
+        fNameLabel = tk.Label(master=editCustomerFrame, text="First Name:")
+        fNameLabel.place(x=115,y=60, width=100,height=20)
+        
+        lNameLabel = tk.Label(master=editCustomerFrame, text="Last Name:")
+        lNameLabel.place(x=115,y=90, width=100, height=20)
+        
+        contactLabel = tk.Label(master=editCustomerFrame, text="Contact Number:")
+        contactLabel.place(x=91, y=120,width=110, height=20)
+        
+        addressLabel = tk.Label(master=editCustomerFrame, text="Address:")
+        addressLabel.place(x=120, y=150, width=100,height=20)
+        
+        instructionLabel = tk.Label(master=editCustomerFrame,text="Edit This Customer's Profile then press \nSubmit to commit changes!")
+        instructionLabel.place(x=105,y=5, width=300,height=40)
+        
+        #Textbox Configuration
+        self.fNameText = tk.Text(master=editCustomerFrame)
+        self.fNameText.place(x=230,y=60,width=200,height=20)
+        
+        self.lNameText = tk.Text(master=editCustomerFrame)
+        self.lNameText.place(x=230,y=90,width=200,height=20)
+        
+        self.contactText = tk.Text(master=editCustomerFrame)
+        self.contactText.place(x=230,y=120,width=200,height=20)
+        
+        self.addressText = tk.Text(master=editCustomerFrame)
+        self.addressText.place(x=230,y=150,width=200,height=20)
+        
+        self.loadDataFromDB()
+        
+    def loadDataFromDB(self):
+        fName = self.profile[2]
+        lName = self.profile[3]
+        address = self.profile[4]
+        contact = self.profile[5]
+        
+        self.fNameText.insert("1.0", fName)
+        self.lNameText.insert("1.0",lName)
+        self.addressText.insert("1.0",address)
+        self.contactText.insert("1.0",contact)
+    
+    def commitToDB(self):
+        fName = self.fNameText.get("1.0", "end").strip()
+        lName = self.lNameText.get("1.0", "end").strip()
+        address = self.addressText.get("1.0", "end").strip()
+        contact = self.contactText.get("1.0", "end").strip()
+        customerID = self.profile[1]
+        
+        conn = sqlite3.connect("inventory.db")
+        cur = conn.cursor()
+        cur.execute("UPDATE customer SET fName = '{0}', lName = '{1}', address = '{2}', contactNumber = '{3}' WHERE CusID = '{4}'".format(fName,lName,address,contact,customerID))
+        conn.commit()
+        conn.close()
+        print("Customer updated:")
+        print("{0}, {1}, {2}, {3}".format(fName,lName,address,contact))
 #POS Stuff
 class POSMenu():
     def __init__(self):
