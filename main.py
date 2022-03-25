@@ -104,6 +104,7 @@ class manageProducts():
         addProduct.place(x=90,y=70,width=125,height=50)
         
         editProduct = tk.Button(master=manageProductFrame, text="Edit a Product")
+        editProduct['command'] = self.editProduct
         editProduct.place(x=90,y=140,width=125,height=50)
         
         deleteProduct = tk.Button(master=manageProductFrame, text="Delete a Product")
@@ -111,6 +112,8 @@ class manageProducts():
         
     def addProducts(self):
         addProduct(self.win)
+    def editProduct(self):
+        editProducts(self.win)
 
 class addProduct():
     def __init__(self, previousWindow):
@@ -168,6 +171,59 @@ class addProduct():
         conn.close()
         print("Product added: {0}, {1}, {2}".format(productName, productPrice, quantity))
 
+class editProducts():
+    def __init__(self,previousWin):
+        #Window Configuration
+        self.win = tk.Toplevel(previousWin)
+        self.win.title("Edit Products")
+        self.win.geometry("500x300")
+        self.win.rowconfigure(0,weight=1)
+        self.win.columnconfigure(1,weight=1)
+        
+        #Frame Configuration
+        editProductsFrame = tk.Frame(master=self.win)
+        editProductsFrame.grid(row=0,column=1, sticky="nsew")
+        
+        #Label Configuration
+        nameLabel = tk.Label(master=editProductsFrame, text="Product Name:")
+        nameLabel.place(x=115,y=60, width=100,height=20)
+        
+        #Button Configuration
+        exitButton = tk.Button(master= editProductsFrame,text="Exit")
+        exitButton['command'] = self.win.destroy
+        exitButton.place(x=5,y=5,width=100, height=50)
+        
+        submitButton = tk.Button(master= editProductsFrame, text="Submit")
+        # submitButton['command'] = self.commitToDB
+        submitButton.place(x=395,y=245,width=100,height=50)
+        
+        #Textbox Configuration
+        self.nameText = tk.Text(master=editProductsFrame)
+        self.nameText.place(x=230,y=60,width=200,height=20)
+        
+    def findInDB(self):
+        name = self.nameText.get("1.0", "end").strip()
+        
+        conn = sqlite3.connect("inventory.db")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM item WHERE itemName = '{0}'".format(name))
+        items = cur.fetchall()
+        print("Results")
+        for item in items:
+            print(item)
+        conn.close()
+        if len(items) == 0:
+            showinfo("Warning", "There isn't any items with this name!")
+        else:
+            print()
+            #Select Item
+
+# class SelectItem():
+#     def __init__(self, previousWindow, possibleItems, funcion):
+#         #Window Configuration
+#         self.win = tk.Toplevel(previousWindow)
+#         self.win.title("Select a Item")
+#         self.win.geometry("500x300")
 #Customer Stuff
 class manageCustomers():
     def __init__(self,previousWindow):
@@ -445,8 +501,7 @@ class SelectProfile():
             deleteProfile(self.win,self.profiles[self.currentProfile])
         else:
             showinfo("Error", "Error: class: SelectProfile, Function:submit, self.function is not 'edit' or 'delete'")
-
-    
+   
 class editCustomerProfile():
     def __init__(self, previousWin,currentProfiles):
         #Window Configuration
@@ -648,8 +703,7 @@ class deleteProfile():
         cur = conn.cursor()
         cur.execute("DELETE FROM customer WHERE CusID = '{0}'".format(self.profile[1]))
         conn.commit()
-        conn.close()
-        
+        conn.close()        
         
 #POS Stuff
 class POSMenu():
