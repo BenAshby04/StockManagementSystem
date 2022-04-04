@@ -40,7 +40,7 @@ class App(tk.Tk):
     
     def pos(self):
         print("POS Selected")
-        POSMenu()
+        POSMenu(mainwin)
     
     def admin(self):
         print("Admin Selected")

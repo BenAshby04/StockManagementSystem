@@ -5,7 +5,7 @@ import os
 
 #POS Stuff
 class POSMenu():
-    def __init__(self):
+    def __init__(self, previousWin):
         #Window Configuration
         self.detectItems()
         self.currentItem = 0
@@ -14,7 +14,7 @@ class POSMenu():
         self.subtotal = 0.0
         self.orderList = []
         
-        self.win = tk.Toplevel(mainwin)
+        self.win = tk.Toplevel(previousWin)
         self.win.title("POS")
         self.win.geometry("800x600")
         self.win.rowconfigure(0, weight=1)
