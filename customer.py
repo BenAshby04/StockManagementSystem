@@ -278,6 +278,8 @@ class SelectProfile():
             editCustomerProfile(self.win, self.profiles[self.currentProfile])
         elif self.function == "delete":
             deleteProfile(self.win,self.profiles[self.currentProfile])
+        elif self.function == "subtotal":
+            return self.profiles[self.currentProfile]
         else:
             showinfo("Error", "Error: class: SelectProfile, Function:submit, self.function is not 'edit' or 'delete'")
    
