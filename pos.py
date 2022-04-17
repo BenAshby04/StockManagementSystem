@@ -1,4 +1,5 @@
 import sqlite3
+from sys import getprofile
 import tkinter as tk
 from tkinter.messagebox import showinfo
 import os
@@ -6,6 +7,8 @@ from customer import *
 from datetime import date
 
 #POS Stuff
+customerProfileID = None
+
 class POSMenu():
     def __init__(self, previousWin):
         #Window Configuration
@@ -70,25 +73,29 @@ class POSMenu():
         cur.execute("SELECT * FROM item")
         
         self.items = cur.fetchall()
-        self.amountOfItems = len(self.items)
+        self.amountOfItems = len(self.items)    
     
     def subtotalOrder(self):
-        profile = SubtotalOrder(self.win)
-        conn = sqlite3.connect("inventory.db")
-        cur = conn.cursor()
+        #Figure out how to debug this
+        SubtotalOrder(self.win, self.orderList, self.subtotal)
+        # conn = sqlite3.connect("inventory.db")
+        # cur = conn.cursor()
+        # print(customerProfileID)
+        # today = date.today()
+        # cur.execute("INSERT INTO orders (cusID, date, subtotal) VALUES ('{0}', '{1}', '{2}')".format(customerProfileID, today.strftime("%d/%m/%Y"), self.subtotal))
+        # cur.execute("SELECT * FROM orders WHERE OrderID = (SELECT MAX(OrderID) FROM orders)")
+        # orderID = cur.fetchone()
         
-        today = date.today()
-        cur.execute("INSERT INTO orders (cusID, date, subtotal) VALUES ('{0}', '{1}', '{2}')".format(profile, today.strftime("%d/%m/%Y"), self.subtotal))
-        cur.execute("SELECT * FROM orders WHERE OrderID = (SELECT MAX(OrderID) FROM orders)")
-        orderID = cur.fetchone()
-        
-        for items in self.orderList:
-            cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID, items[1]))
-            conn.commit()
+        # for items in self.orderList:
+        #     cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID[1], items[1]))
             
+        # conn.commit()
+        # conn.close()
         
 class SubtotalOrder():
-    def __init__(self, previousWindow):
+    def __init__(self, previousWindow, orderlist, subtotal):
+        self.orderList = orderlist
+        self.subtotal = subtotal
         #Window Configuration
         self.win = tk.Toplevel(previousWindow)
         self.win.title("Search for a Customer")
@@ -138,7 +145,152 @@ class SubtotalOrder():
         if len(profiles) == 0:
             showinfo(title="Warning", message="There isn't any profiles with these details!")
         else:
-            profile = SelectProfile(self.win, profiles, "subtotal")
-            return profile
-            self.win.destroy()
+            SelectProfilePOS(self.win, profiles, "subtotal", self.orderList, self.subtotal)
+  
 
+class SelectProfilePOS():
+    def __init__(self,previousWindow, possibleProfiles, function, orderlist, subtotal):
+        self.orderList = orderlist
+        self.subtotal = subtotal
+        #Window Configuration
+        self.profiles = possibleProfiles
+        self.function = function
+        self.currentProfile = 0
+        self.win = tk.Toplevel(previousWindow)
+        self.win.title("Select a Profile")
+        self.win.geometry("500x300")
+        self.win.rowconfigure(0,weight=1)
+        self.win.columnconfigure(1, weight=1)
+        
+        #Frame Configuration
+        selectProfileFrame = tk.Frame(master=self.win)
+        selectProfileFrame.grid(row=0,column=1,sticky="nsew")
+        
+        #Button Configuration
+        exitButton = tk.Button(master=selectProfileFrame, text="Exit")
+        exitButton['command'] = self.win.destroy
+        exitButton.place(x=5,y=5,width=100,height=50)
+        
+        selectButton = tk.Button(master=selectProfileFrame, text="Submit")
+        selectButton['command'] = self.submit
+        selectButton.place(x=200, y=245,width=100, height=50)
+        
+        nextButton = tk.Button(master=selectProfileFrame, text="Next")
+        nextButton['command'] = self.nextProfile
+        nextButton.place(x=395, y=175, width=100,height=50)
+        
+        previousButton = tk.Button(master=selectProfileFrame, text="Previous")
+        previousButton['command'] = self.previousProfile
+        previousButton.place(x=5, y=175, width=100, height=50)
+        
+        #Label Configuration
+        fNameLabel = tk.Label(master=selectProfileFrame, text="First Name:")
+        fNameLabel.place(x=115,y=60, width=100,height=20)
+        
+        lNameLabel = tk.Label(master=selectProfileFrame, text="Last Name:")
+        lNameLabel.place(x=115,y=90, width=100, height=20)
+        
+        contactLabel = tk.Label(master=selectProfileFrame, text="Contact Number:")
+        contactLabel.place(x=91, y=120,width=110, height=20)
+        
+        addressLabel = tk.Label(master=selectProfileFrame, text="Address:")
+        addressLabel.place(x=120, y=150, width=100,height=20)
+        
+        #Textbox Configuration
+        self.fNameText = tk.Text(master=selectProfileFrame)
+        self.fNameText.place(x=230,y=60,width=200,height=20)
+        
+        self.lNameText = tk.Text(master=selectProfileFrame)
+        self.lNameText.place(x=230,y=90,width=200,height=20)
+        
+        self.contactText = tk.Text(master=selectProfileFrame)
+        self.contactText.place(x=230,y=120,width=200,height=20)
+        
+        self.addressText = tk.Text(master=selectProfileFrame)
+        self.addressText.place(x=230,y=150,width=200,height=20)
+        
+        self.firstProfile()
+        print("Current Profile: " + str(self.currentProfile))
+        
+    def firstProfile(self):
+        #This functions loads the first profile from the SQL Query into the textboxes on screen
+        firstProfile = self.profiles[0]
+        self.fNameText.insert("1.0", firstProfile[2])
+        self.lNameText.insert("1.0", firstProfile[3])
+        self.addressText.insert("1.0", firstProfile[4])
+        self.contactText.insert("1.0", firstProfile[5])
+        
+    def nextProfile(self):
+        #This function will load the next profile in the list
+        #If it reaches the end of the list it will loop back around to the first profile.
+        
+        #Makes the Textboxes Blank
+        self.fNameText.delete("1.0",'end')
+        self.lNameText.delete("1.0",'end')
+        self.addressText.delete("1.0",'end')
+        self.contactText.delete("1.0",'end')
+        
+        # print(len(self.profiles))
+        self.currentProfile = self.currentProfile +1
+        
+        #Checks if self.currentProfile goes over the number of profiles found and if it is sets it back to 0
+        if (self.currentProfile + 1) > len(self.profiles):
+            self.currentProfile = 0
+        profile = self.profiles[self.currentProfile]
+        
+        #Updates textboxes
+        self.fNameText.insert("1.0", profile[2])
+        self.lNameText.insert("1.0", profile[3])
+        self.addressText.insert("1.0", profile[4])
+        self.contactText.insert("1.0", profile[5])
+        
+    def previousProfile(self):
+        #This functions will the load the previous profile in the list
+        #If it is the first item in the list it will loop to the last profile in the list
+        
+        #Makes the Textboxes Blank
+        self.fNameText.delete("1.0",'end')
+        self.lNameText.delete("1.0",'end')
+        self.addressText.delete("1.0",'end')
+        self.contactText.delete("1.0",'end')
+        
+        # print(len(self.profiles))
+        self.currentProfile = self.currentProfile - 1
+        #Checks if self.currentProfile is below 0 if it is it will set it to the max of the list
+        if(self.currentProfile) < 0:
+            self.currentProfile = (len(self.profiles)-1)
+        #Grabs profile from list
+        profile = self.profiles[self.currentProfile]
+        #Updates textboxes
+        self.fNameText.insert("1.0", profile[2])
+        self.lNameText.insert("1.0", profile[3])
+        self.addressText.insert("1.0", profile[4])
+        self.contactText.insert("1.0", profile[5])
+    
+    def submit(self):
+        #Goto edit values to make the changes to that profile.
+        print(self.profiles[self.currentProfile])
+        if self.function == "edit":
+            editCustomerProfile(self.win, self.profiles[self.currentProfile])
+        elif self.function == "delete":
+            deleteProfile(self.win,self.profiles[self.currentProfile])
+        elif self.function == "subtotal":
+            getProfile(self.profiles[self.currentProfile][1], self.orderList, self.subtotal)
+        else:
+            showinfo("Error", "Error: class: SelectProfile, Function:submit, self.function is not 'edit' or 'delete'")
+    
+def getProfile(profile, orderlist, subtotal):
+    customerProfileID = profile
+    conn = sqlite3.connect("inventory.db")
+    cur = conn.cursor()
+    print(customerProfileID)
+    today = date.today()
+    cur.execute("INSERT INTO orders (cusID, date, subtotal) VALUES ('{0}', '{1}', '{2}')".format(customerProfileID, today.strftime("%d/%m/%Y"), subtotal))
+    cur.execute("SELECT * FROM orders WHERE OrderID = (SELECT MAX(OrderID) FROM orders)")
+    orderID = cur.fetchone()
+
+    for items in orderlist:
+        cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID[1], items[1]))
+        
+    conn.commit()
+    conn.close()

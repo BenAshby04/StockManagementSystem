@@ -273,16 +273,17 @@ class SelectProfile():
     
     def submit(self):
         #Goto edit values to make the changes to that profile.
-        print(self.profiles[self.currentProfile])
+        print(self.profiles([self.currentProfile]))
         if self.function == "edit":
             editCustomerProfile(self.win, self.profiles[self.currentProfile])
         elif self.function == "delete":
             deleteProfile(self.win,self.profiles[self.currentProfile])
         elif self.function == "subtotal":
-            return self.profiles[self.currentProfile]
+            return self.__class_getitem__()
         else:
             showinfo("Error", "Error: class: SelectProfile, Function:submit, self.function is not 'edit' or 'delete'")
-   
+    def __class_getitem__(self):
+        return self.profiles[self.currentProfile]   
 class editCustomerProfile():
     def __init__(self, previousWin,currentProfiles):
         #Window Configuration
