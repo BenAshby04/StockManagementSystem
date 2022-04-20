@@ -290,7 +290,13 @@ def getProfile(profile, orderlist, subtotal):
     orderID = cur.fetchone()
 
     for items in orderlist:
+        itemID = items[1]
         cur.execute("INSERT INTO transactions (OrderID, ItemID) VALUES ('{0}', '{1}')".format(orderID[1], items[1]))
+        conn.commit()
+        cur.execute("SELECT * FROM item WHERE ItemID = '{0}'".format(items[1]))
+        quantityObject = cur.fetchone()
+        newQuantity = quantityObject[4] - 1
+        cur.execute("UPDATE item SET quantity = '{0}' WHERE ItemID = '{1}'".format(newQuantity, itemID))
         
     conn.commit()
     conn.close()
