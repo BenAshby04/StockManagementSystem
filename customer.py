@@ -279,12 +279,10 @@ class SelectProfile():
             editCustomerProfile(self.win, self.profiles[self.currentProfile])
         elif self.function == "delete":
             deleteProfile(self.win,self.profiles[self.currentProfile])
-        elif self.function == "subtotal":
-            return self.__class_getitem__()
         else:
             showinfo("Error", "Error: class: SelectProfile, Function:submit, self.function is not 'edit' or 'delete'")
-    def __class_getitem__(self):
-        return self.profiles[self.currentProfile]   
+    # def __class_getitem__(self):
+    #     return self.profiles[self.currentProfile]   
 class editCustomerProfile():
     def __init__(self, previousWin,currentProfiles):
         #Window Configuration
