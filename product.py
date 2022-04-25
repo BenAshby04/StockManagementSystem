@@ -96,6 +96,7 @@ class addProduct():
         conn.commit()
         conn.close()
         print("Product added: {0}, {1}, {2}".format(productName, productPrice, quantity))
+        self.win.destroy()
 
 class editProducts():
     def __init__(self,previousWin):
@@ -331,6 +332,7 @@ class editItem():
         conn.close()
         print("Item updated:")
         print("{0}, {1}, {2}".format(name,price,quantity))
+        
 
 class DeleteProductsMenu():
     def __init__(self, previousWin):

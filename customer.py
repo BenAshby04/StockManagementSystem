@@ -100,6 +100,7 @@ class addCustomers():
         conn.commit()
         conn.close()
         print("Customer added: {0}, {1}, {2}, {3}".format(fName, lName, contactNum, address))
+        self.win.destroy()
 
 class editCustomers():
     def __init__(self, previousWindow):
@@ -273,7 +274,7 @@ class SelectProfile():
     
     def submit(self):
         #Goto edit values to make the changes to that profile.
-        print(self.profiles([self.currentProfile]))
+        print(self.profiles[self.currentProfile])
         if self.function == "edit":
             editCustomerProfile(self.win, self.profiles[self.currentProfile])
         elif self.function == "delete":
