@@ -1,3 +1,4 @@
+import math
 import sqlite3
 from sys import getprofile
 import tkinter as tk
@@ -21,26 +22,28 @@ class POSMenu():
         
         self.win = tk.Toplevel(previousWin)
         self.win.title("POS")
-        self.win.geometry("800x600")
+        self.win.geometry("900x600")
         self.win.rowconfigure(0, weight=1)
         self.win.columnconfigure(1, weight=1)
         
         #Frame Configuration
-        posButtonFrame = tk.Frame(master=self.win)
-        posButtonFrame.grid(row=0,column=1,sticky="nsew")
+        self.posButtonFrame = tk.Frame(master=self.win)
+        self.posButtonFrame.grid(row=0,column=1,sticky="nsew")
         
         #Button Configuration
-        exitButton = tk.Button(master=posButtonFrame, text="Exit")
+        exitButton = tk.Button(master=self.posButtonFrame, text="Exit")
         exitButton['command'] = self.win.destroy
         exitButton.place(x=5,y=5,width=100,height=50)
         
-        subtotalButton = tk.Button(master=posButtonFrame,text="Subtotal")
+        subtotalButton = tk.Button(master=self.posButtonFrame,text="Subtotal")
         subtotalButton['command'] = self.subtotalOrder
         subtotalButton.place(x=350,y=545, width=100, height=50)
         
         #Label Configuration
-        self.subtotalLabel = tk.Label(master=posButtonFrame, text="Subtotal: {0}".format(self.subtotal), anchor="w")
+        self.subtotalLabel = tk.Label(master=self.posButtonFrame, text="Subtotal: {0}".format(self.subtotal), anchor="w")
         self.subtotalLabel.place(x=5, y=570, width=150, height=20)
+        
+        #Folder Button
         
         
         #Product Button Configuration
@@ -48,8 +51,12 @@ class POSMenu():
         Y = 75
         xAdd = X +100 + 10
         yAdd = Y  + 10
+        amountOfItems = len(self.items)
+        pages = math.ceil(amountOfItems / 20)
+        currentPage = 1 
+        # loadButtons(currentPage)
         for item in self.items:
-            self.itemButtom.append(tk.Button(master=posButtonFrame,text=item[2]))
+            self.itemButtom.append(tk.Button(master=self.posButtonFrame,text=item[2]))
             self.itemButtom[self.currentItem]['command'] = lambda itemFunc = item: self.addItemToOrder(itemFunc)
             self.itemButtom[self.currentItem].place(x=X,y=Y,width=100,height=50)
             X = X + xAdd
@@ -58,6 +65,24 @@ class POSMenu():
                 Y = Y + yAdd
                 
             self.currentItem = self.currentItem + 1
+        def loadButtons(self, currentPage):
+            for item in self.items:
+                if currentPage == 1:
+                    if self.items.index(item) >= (currentPage * 20):
+                        break
+                    self.itemButtom.append(tk.Button(master=self.posButtonFrame,text=item[2]))
+                    self.itemButtom[self.currentItem]['command'] = lambda itemFunc = item: self.addItemToOrder(itemFunc)
+                    self.itemButtom[self.currentItem].place(x=X,y=Y,width=100,height=50)
+                    X = X + xAdd
+                    if X >= 690:
+                        X = 55
+                        Y = Y + yAdd
+                    self.currentItem = self.currentItem + 1
+                    
+                
+                
+            
+            
         
     def addItemToOrder(self, item):
         self.orderList.append(item)

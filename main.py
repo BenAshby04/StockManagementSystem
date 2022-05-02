@@ -5,6 +5,7 @@ from tkinter.messagebox import showinfo
 from customer import *
 from product import *
 from pos import *
+from folder import *
 
 
 currentProfile = []
@@ -51,7 +52,7 @@ class AdminMenu():
         #Window Configuration
         self.win = tk.Toplevel(mainwin)
         self.win.title("Admin Menu")
-        self.win.geometry("300x300")
+        self.win.geometry("300x350")
         self.win.rowconfigure(0, weight=1)
         self.win.columnconfigure(1, weight=1)
         
@@ -72,6 +73,10 @@ class AdminMenu():
         productButton['command']=self.manageProduct
         productButton.place(x=85,y=175, width=130, height=50)  
         
+        folderButton = tk.Button(master=adminMenuFrame, text="Manage Folders")
+        folderButton['command'] = self.manageFolder
+        folderButton.place(x=85, y=250, width=130, height=50)
+        
     def manageCustomer(self):
         print("Manage Customers Selected")
         manageCustomers(self.win)
@@ -79,6 +84,10 @@ class AdminMenu():
     def manageProduct(self):
         print("Manage Product Selected")
         manageProducts(self.win)
+    
+    def manageFolder(self):
+        print("Manage Folders Selected")
+        Folder(self.win)
 
 
 
@@ -90,12 +99,19 @@ def checkDatabaseExist():
         cur = conn.cursor()
         
         #Create tables in the db
+        cur.execute("""CREATE TABLE folders(
+            FolderID TEXT GENERATED ALWAYS AS ('FID' || SUBSTR('0000' || ID, -4)),
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            FolderName text)
+            """)
         cur.execute("""CREATE TABLE item(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             ItemID TEXT GENERATED ALWAYS AS ('IID' || SUBSTR('0000' || ID, -4)) STORED,
             itemName text,
             itemPrice real,
-            quantity integer)""")
+            quantity integer,
+            FolderID text,
+            FOREIGN KEY(FolderID) REFERENCES folder(FolderID))""")
         cur.execute("""CREATE TABLE customer(
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             CusID TEXT GENERATED ALWAYS AS ('CID' || SUBSTR('0000' || ID, -4)) STORED,
@@ -117,6 +133,7 @@ def checkDatabaseExist():
             ItemID text,
             FOREIGN KEY(OrderID) REFERENCES orders(OrderID),
             FOREIGN KEY(ItemID) REFERENCES item(ItemID))""")
+        
         conn.commit()
         conn.close()
 
