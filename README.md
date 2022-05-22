@@ -3,7 +3,7 @@ Built with Python's TKinter Library and sqlite3
 Written in Python 3.10
 
 ## About The Project
-This project allows the user to create items and customers to a database, in which they can be accessed in simple POS system which also storestransactions in the database.
+This project allows the user to create items and customers to a database, in which they can be accessed in simple POS system which also stores transactions in the database.
 
 
 ## What I Learned?
